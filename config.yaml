@@ -1,0 +1,20 @@
+wake_word: "wanzhi"
+voice: "piper-zh"
+lang: "zh-CN"
+
+stt:
+  provider: "vosk"
+  model_path: "models/vosk-model"
+
+tts:
+  provider: "piper"
+  model_path: "models/piper-voice"
+
+nlu:
+  provider: "rasa"
+  model_path: "models/rasa-model"
+
+llm:
+  provider: "ollama"
+  host: "http://localhost:11434"
+  model: "qwen2:0.5b-instruct"
