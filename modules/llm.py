@@ -1,5 +1,6 @@
 def generate_reply(intent: dict) -> str:
-    # Stub: replace with Ollama call
-    if intent.get("intent") == "medication":
-        return "好的，我会在晚上八点提醒你吃药。"
+    if intent.get("intent") in {"show_medication", "medication_reminder"}:
+        return "好的，我帮你打开药物清单。"
+    if intent.get("intent") == "emergency":
+        return "我已经记录紧急情况。"
     return "我在听呢，想聊点什么？"

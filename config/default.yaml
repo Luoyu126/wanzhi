@@ -1,0 +1,98 @@
+lang: zh-CN
+wake_word: 你好，小丸子
+
+wake:
+  provider: vosk
+  vosk_model_dir: models/vosk-model
+  sample_rate: 16000
+  device_index: null
+  device_name: Yundea M1066
+  fuzzy_threshold: 0.72
+  greeting: 我在呢，请说。
+
+voice:
+  default: default_soft
+  profiles_file: config/voices.yaml
+
+stt:
+  provider: vosk
+  model_dir: models/vosk-model
+  sherpa_model_dir: models/sherpa-asr/streaming-zipformer-bilingual-zh-en
+  sample_rate: 16000
+  device_index: null
+  device_name: Yundea M1066
+  fallback_text: ""
+
+conversation:
+  followup_turns: 3
+
+llm:
+  provider: ollama
+  host: http://127.0.0.1:11434
+  model: qwen2.5:1.5b-instruct
+  timeout_seconds: 30
+
+tts:
+  provider: piper
+  binary: .venv/bin/piper
+  sherpa_binary: .venv/bin/sherpa-onnx-offline-tts
+  voices_dir: models/piper-voices
+  cache_dir: data/tts-cache
+  output_device: plughw:3,0
+  num_threads: 2
+  sherpa_models:
+    aishell3:
+      type: vits
+      model_path: models/sherpa-tts/vits-icefall-zh-aishell3/model.onnx
+      lexicon_path: models/sherpa-tts/vits-icefall-zh-aishell3/lexicon.txt
+      tokens_path: models/sherpa-tts/vits-icefall-zh-aishell3/tokens.txt
+      rule_fsts:
+        - models/sherpa-tts/vits-icefall-zh-aishell3/phone.fst
+        - models/sherpa-tts/vits-icefall-zh-aishell3/date.fst
+        - models/sherpa-tts/vits-icefall-zh-aishell3/number.fst
+    kokoro:
+      type: kokoro
+      model_path: models/sherpa-tts/kokoro-multi-lang-v1_0/model.onnx
+      voices_path: models/sherpa-tts/kokoro-multi-lang-v1_0/voices.bin
+      tokens_path: models/sherpa-tts/kokoro-multi-lang-v1_0/tokens.txt
+      data_dir: models/sherpa-tts/kokoro-multi-lang-v1_0/espeak-ng-data
+      lexicon_paths:
+        - models/sherpa-tts/kokoro-multi-lang-v1_0/lexicon-us-en.txt
+        - models/sherpa-tts/kokoro-multi-lang-v1_0/lexicon-zh.txt
+      rule_fsts:
+        - models/sherpa-tts/kokoro-multi-lang-v1_0/date-zh.fst
+        - models/sherpa-tts/kokoro-multi-lang-v1_0/phone-zh.fst
+        - models/sherpa-tts/kokoro-multi-lang-v1_0/number-zh.fst
+
+settings:
+  path: data/settings.json
+
+vision:
+  enabled: true
+  autostart: true
+  camera_id: 0
+  device_path: ""
+  width: 640
+  height: 480
+  fps_target: 6
+  pose_backend: auto
+  emit_snapshots: true
+  snapshot_dir: data/vision-events
+  preview_frame_path: data/camera-preview/latest.jpg
+  preview_update_every_frames: 2
+  health_interval_seconds: 30
+  fall_config: config/fall_detection.yaml
+
+ui:
+  fullscreen: true
+  default_screen: camera
+  event_log: data/events.jsonl
+  camera_preview: true
+  camera_fps: 24
+  camera_frame_path: data/camera-preview/latest.jpg
+
+database:
+  path: data/wanzhi.db
+
+events:
+  log_path: data/events.jsonl

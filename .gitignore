@@ -8,3 +8,14 @@ wheels/
 
 # Virtual environments
 .venv
+
+# Runtime state and large local models
+data/
+models/sherpa-asr/
+models/sherpa-tts/
+models/piper-voices/
+models/wakeword/
+models/mediapipe/
+assets/sounds/cache/
+*.wav
+*.log

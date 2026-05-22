@@ -1,0 +1,41 @@
+voices:
+  default_soft:
+    label: 温柔女声
+    engine: piper
+    model_path: models/piper-voices/zh_CN-huayan-medium.onnx
+    config_path: models/piper-voices/zh_CN-huayan-medium.onnx.json
+    speaker: null
+    speed: 1.0
+    volume: 0.9
+  huayan_soft:
+    label: 温柔女声（Piper）
+    engine: piper
+    model_path: models/piper-voices/zh_CN-huayan-medium.onnx
+    config_path: models/piper-voices/zh_CN-huayan-medium.onnx.json
+    speaker: null
+    speed: 1.0
+    volume: 0.9
+  elder_male:
+    label: 老年男声
+    engine: sherpa
+    model: aishell3
+    speaker: 21
+    length_scale: 1.12
+  elder_female:
+    label: 老年女声
+    engine: sherpa
+    model: aishell3
+    speaker: 41
+    length_scale: 1.08
+  child_male:
+    label: 童年男声
+    engine: sherpa
+    model: kokoro
+    speaker: 18
+    speed: 1.04
+  child_female:
+    label: 童年女声
+    engine: sherpa
+    model: kokoro
+    speaker: 23
+    speed: 1.06

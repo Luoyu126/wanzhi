@@ -1,10 +1,38 @@
 [project]
 name = "wanzhi"
 version = "0.1.0"
-description = "Add your description here"
+description = "Offline elder-care voice, vision, and medication assistant for Raspberry Pi."
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.11"
 dependencies = [
+    "kivy>=2.3.0",
+    "numpy>=1.26.0",
+    "onnxruntime==1.24.4",
+    "opencv-python>=4.9.0",
+    "piper-tts>=1.4.2",
     "pyaudio>=0.2.14",
+    "pyyaml>=6.0.1",
+    "requests>=2.31.0",
+    "sherpa-onnx>=1.10.0",
     "vosk>=0.3.45",
 ]
+
+[project.optional-dependencies]
+pose-mediapipe = [
+    "mediapipe>=0.10.14; platform_machine != 'aarch64'",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.3",
+    "uv>=0.11.16",
+]
+
+[project.scripts]
+wanzhi = "wanzhi.app:main"
+wanzhi-voice = "wanzhi.voice.daemon:main"
+wanzhi-vision = "wanzhi.vision.daemon:main"
+wanzhi-ui = "wanzhi.ui.main:main"
+
+[tool.uv]
+package = true

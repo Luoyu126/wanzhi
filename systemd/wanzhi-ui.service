@@ -1,0 +1,16 @@
+[Unit]
+Description=Wanzhi Kivy display
+After=graphical-session.target
+
+[Service]
+Type=simple
+WorkingDirectory=/home/icenter/wanzhi
+Environment=KIVY_NO_ARGS=1
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/home/icenter/wanzhi/src
+ExecStart=/home/icenter/wanzhi/.venv/bin/wanzhi-ui
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,5 +1,5 @@
-wake_word: "wanzhi"
-voice: "piper-zh"
+wake_word: "你好，小丸子"
+voice: "default_soft"
 lang: "zh-CN"
 
 stt:
@@ -8,13 +8,12 @@ stt:
 
 tts:
   provider: "piper"
-  model_path: "models/piper-voice"
+  model_path: "models/piper-voices/zh_CN-huayan-medium.onnx"
 
 nlu:
-  provider: "rasa"
-  model_path: "models/rasa-model"
+  provider: "router"
 
 llm:
   provider: "ollama"
-  host: "http://localhost:11434"
-  model: "qwen2:0.5b-instruct"
+  host: "http://127.0.0.1:11434"
+  model: "qwen2.5:1.5b-instruct"
