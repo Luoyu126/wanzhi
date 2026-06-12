@@ -1,6 +1,6 @@
 [Unit]
 Description=Wanzhi fall detection daemon
-After=graphical-session.target
+After=graphical-session.target wanzhi-ui.service
 
 [Service]
 Type=simple
@@ -10,6 +10,7 @@ Environment=PYTHONPATH=/home/icenter/wanzhi/src
 ExecStart=/home/icenter/wanzhi/.venv/bin/wanzhi-vision
 Restart=always
 RestartSec=5
+Nice=10
 
 [Install]
-WantedBy=default.target
+WantedBy=wanzhi.target

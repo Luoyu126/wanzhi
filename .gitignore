@@ -19,3 +19,7 @@ models/mediapipe/
 assets/sounds/cache/
 *.wav
 *.log
+
+# Local secrets
+.env
+*.env

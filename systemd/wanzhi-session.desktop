@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Wanzhi Assistant
+Comment=Start Wanzhi fullscreen assistant after graphical login
+Exec=/home/icenter/wanzhi/scripts/start_graphical_session.sh
+Terminal=false
+X-GNOME-Autostart-enabled=true

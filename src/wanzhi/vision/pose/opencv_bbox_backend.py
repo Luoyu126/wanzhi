@@ -6,11 +6,7 @@ from wanzhi.vision.pose.base import Landmark, PoseResult
 
 
 class OpenCVBboxPoseEstimator:
-    """Very lightweight fallback: infer a body-like box from foreground motion.
-
-    This is not a full pose model. It keeps the daemon useful on Raspberry Pi when
-    MediaPipe/YOLO is unavailable, and it validates the event pipeline.
-    """
+    """Very lightweight fallback: infer a body-like box from foreground motion."""
 
     name = "opencv_bbox"
 
@@ -45,20 +41,14 @@ class OpenCVBboxPoseEstimator:
             landmarks=landmarks,
             backend=self.name,
             confidence=confidence,
-            metadata={"bbox": [x, y, w, h], "area": area},
+            metadata={"bbox": [x, y, w, h], "area": area, "frame_height": float(height)},
         )
 
 
 def _bbox_landmarks(x: float, y: float, w: float, h: float) -> list[Landmark]:
-    points = [Landmark(x=x + w / 2, y=y + h / 2, visibility=0.9) for _ in range(33)]
-    # Approximate shoulder, hip, and knee landmarks so existing geometry works.
-    points[11] = Landmark(x=x + w * 0.3, y=y + h * 0.25, visibility=0.9)
-    points[12] = Landmark(x=x + w * 0.7, y=y + h * 0.25, visibility=0.9)
-    points[23] = Landmark(x=x + w * 0.35, y=y + h * 0.55, visibility=0.9)
-    points[24] = Landmark(x=x + w * 0.65, y=y + h * 0.55, visibility=0.9)
-    points[25] = Landmark(x=x + w * 0.35, y=y + h * 0.85, visibility=0.9)
-    points[26] = Landmark(x=x + w * 0.65, y=y + h * 0.85, visibility=0.9)
-    points[0] = Landmark(x=x + w / 2, y=y, visibility=0.9)
-    points[31] = Landmark(x=x + w * 0.25, y=y + h, visibility=0.9)
-    points[32] = Landmark(x=x + w * 0.75, y=y + h, visibility=0.9)
+    points = [Landmark(x=x + w / 2, y=y + h / 2, visibility=0.9) for _ in range(17)]
+    points[5] = Landmark(x=x + w * 0.3, y=y + h * 0.25, visibility=0.9)
+    points[6] = Landmark(x=x + w * 0.7, y=y + h * 0.25, visibility=0.9)
+    points[11] = Landmark(x=x + w * 0.35, y=y + h * 0.55, visibility=0.9)
+    points[12] = Landmark(x=x + w * 0.65, y=y + h * 0.55, visibility=0.9)
     return points

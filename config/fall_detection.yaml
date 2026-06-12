@@ -1,7 +1,7 @@
 min_detection_confidence: 0.5
-fall_aspect_ratio: 1.3
-torso_angle_degrees: 55
-hip_shoulder_vertical_ratio: 0.15
-min_fall_seconds: 1.5
-required_consecutive_frames: 6
+fall_aspect_ratio: 1.2
+torso_angle_degrees: 30
+vertical_velocity_threshold: 0.08
+min_fall_seconds: 0
+required_consecutive_frames: 15
 cooldown_seconds: 30

@@ -10,6 +10,13 @@ try:
 except ImportError:  # pragma: no cover
     BoxLayout = object  # type: ignore
 
+from wanzhi.ui.fonts import DEFAULT_UI_FONT_SCALE, scaled
+
+
+def _bind_wrapped_label(label: Label) -> Label:
+    label.bind(width=lambda instance, width: setattr(instance, "text_size", (max(width, 1), None)))
+    return label
+
 
 class MedicationCard(BoxLayout):
     def __init__(
@@ -18,28 +25,45 @@ class MedicationCard(BoxLayout):
         on_taken: Callable[[dict[str, Any]], None],
         font_name: str = "Roboto",
         emoji_font_name: str = "Roboto",
+        font_scale: float = DEFAULT_UI_FONT_SCALE,
         **kwargs,
     ):  # type: ignore[no-untyped-def]
-        super().__init__(orientation="horizontal", padding=(18, 14), spacing=16, size_hint_y=None, height=112, **kwargs)
+        layout_scale = min(font_scale, 1.8)
+        super().__init__(
+            orientation="horizontal",
+            padding=(scaled(16, layout_scale), scaled(12, layout_scale)),
+            spacing=scaled(14, layout_scale),
+            size_hint_y=None,
+            height=scaled(126, layout_scale),
+            **kwargs,
+        )
         self.item = item
         with self.canvas.before:
             Color(1.0, 1.0, 1.0, 1)
-            self._bg = RoundedRectangle(radius=[18], pos=self.pos, size=self.size)
+            self._bg = RoundedRectangle(radius=[scaled(18, layout_scale)], pos=self.pos, size=self.size)
         self.bind(pos=self._update_bg, size=self._update_bg)
 
         name = item["name"]
         dosage = item.get("dosage") or ""
         time_of_day = item["time_of_day"]
 
-        icon_box = BoxLayout(orientation="vertical", size_hint_x=None, width=56)
-        icon_box.add_widget(Label(text="⏰", font_size=32, font_name=emoji_font_name))
+        icon_box = BoxLayout(orientation="vertical", size_hint_x=None, width=scaled(46, layout_scale))
+        icon_box.add_widget(
+            Label(
+                text="时",
+                font_size=scaled(30, font_scale),
+                bold=True,
+                color=(0.20, 0.58, 0.42, 1),
+                font_name=font_name,
+            )
+        )
         self.add_widget(icon_box)
 
-        time_box = BoxLayout(orientation="vertical", size_hint_x=None, width=108)
+        time_box = BoxLayout(orientation="vertical", size_hint_x=None, width=scaled(108, layout_scale))
         time_box.add_widget(
             Label(
                 text=time_of_day,
-                font_size=32,
+                font_size=scaled(32, font_scale),
                 bold=True,
                 color=(0.12, 0.25, 0.38, 1),
                 font_name=font_name,
@@ -48,44 +72,46 @@ class MedicationCard(BoxLayout):
         time_box.add_widget(
             Label(
                 text="服药时间",
-                font_size=16,
+                font_size=scaled(16, font_scale),
                 color=(0.45, 0.52, 0.58, 1),
                 font_name=font_name,
             )
         )
         self.add_widget(time_box)
 
-        info_box = BoxLayout(orientation="vertical", spacing=2)
-        info_box.add_widget(
+        info_box = BoxLayout(orientation="vertical", spacing=scaled(2, layout_scale))
+        name_label = _bind_wrapped_label(
             Label(
-                text=f"💊 {name}",
-                font_size=28,
+                text=f"药品：{name}",
+                font_size=scaled(28, font_scale),
                 bold=True,
                 color=(0.10, 0.12, 0.16, 1),
                 font_name=font_name,
                 halign="left",
                 valign="middle",
-                text_size=(420, None),
+                text_size=(1, None),
             )
         )
-        info_box.add_widget(
+        dosage_label = _bind_wrapped_label(
             Label(
-                text=f"📋 {dosage or '请按医嘱服用'}",
-                font_size=20,
+                text=f"剂量：{dosage or '请按医嘱服用'}",
+                font_size=scaled(20, font_scale),
                 color=(0.35, 0.39, 0.44, 1),
                 font_name=font_name,
                 halign="left",
                 valign="middle",
-                text_size=(420, None),
+                text_size=(1, None),
             )
         )
+        info_box.add_widget(name_label)
+        info_box.add_widget(dosage_label)
         self.add_widget(info_box)
 
         button = Button(
-            text="✅ 已服用",
+            text="已服用",
             size_hint_x=None,
-            width=132,
-            font_size=22,
+            width=scaled(132, layout_scale),
+            font_size=scaled(22, font_scale),
             font_name=font_name,
             background_normal="",
             background_color=(0.20, 0.58, 0.42, 1),

@@ -2,6 +2,9 @@ wake_word: "你好，小丸子"
 voice: "default_soft"
 lang: "zh-CN"
 
+ui:
+  font_scale: 2.5
+
 stt:
   provider: "vosk"
   model_path: "models/vosk-model"

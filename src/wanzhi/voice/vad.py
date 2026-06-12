@@ -40,17 +40,21 @@ class SpeechRecorder:
         )
         frames: list[bytes] = []
         silent_count = 0
+        heard_speech = False
         max_chunks = int(self.sample_rate / self.chunk_size * self.max_seconds)
 
         try:
             for _ in range(max_chunks):
                 chunk = stream.read(self.chunk_size, exception_on_overflow=False)
                 frames.append(chunk)
-                if audioop.rms(chunk, 2) < self.silence_rms and frames:
-                    silent_count += 1
-                else:
+                rms = audioop.rms(chunk, 2)
+                if rms >= self.silence_rms:
+                    heard_speech = True
                     silent_count = 0
-                if len(frames) > self.silence_chunks and silent_count >= self.silence_chunks:
+                    continue
+                if heard_speech:
+                    silent_count += 1
+                if heard_speech and silent_count >= self.silence_chunks:
                     break
         finally:
             stream.stop_stream()

@@ -1,0 +1,21 @@
+[Unit]
+Description=Wanzhi local Qwen LLM daemon
+After=network.target
+
+[Service]
+Type=simple
+User=icenter
+Group=icenter
+WorkingDirectory=/home/icenter/wanzhi
+Environment=PYTHONUNBUFFERED=1
+Environment=PYTHONPATH=/home/icenter/wanzhi/src
+ExecStart=/home/icenter/wanzhi/.venv/bin/wanzhi-llm --socket /run/wanzhi-llm/llm.sock
+Restart=always
+RestartSec=5
+RuntimeDirectory=wanzhi-llm
+RuntimeDirectoryMode=0775
+UMask=0007
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target

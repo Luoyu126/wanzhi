@@ -1,0 +1,5 @@
+[Unit]
+Description=Wanzhi elder care assistant stack
+Documentation=file:///home/icenter/wanzhi/README.md
+After=wanzhi-llm.service sound.target network-online.target graphical-session.target
+Wants=wanzhi-llm.service network-online.target wanzhi-ui.service wanzhi-vision.service wanzhi-voice.service

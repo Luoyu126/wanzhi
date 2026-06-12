@@ -6,6 +6,8 @@ import time
 from difflib import SequenceMatcher
 from pathlib import Path
 
+from wanzhi.core.timing import log_timing, now_seconds
+
 
 CONFUSABLES = str.maketrans(
     {
@@ -75,6 +77,18 @@ class WakeWordDetector:
         self.chunk_size = chunk_size
         self._vosk_model = None
 
+    def preload(self) -> bool:
+        if not self.vosk_model_dir or not self.vosk_model_dir.exists():
+            return False
+
+        from vosk import Model
+
+        if self._vosk_model is None:
+            started = now_seconds()
+            self._vosk_model = Model(str(self.vosk_model_dir))
+            log_timing("wake.vosk.preload", started, model_dir=self.vosk_model_dir)
+        return True
+
     def wait(self) -> None:
         if self.vosk_model_dir and self.vosk_model_dir.exists():
             self._wait_with_vosk()
@@ -90,10 +104,9 @@ class WakeWordDetector:
 
     def _wait_with_vosk(self) -> None:
         import pyaudio
-        from vosk import KaldiRecognizer, Model
+        from vosk import KaldiRecognizer
 
-        if self._vosk_model is None:
-            self._vosk_model = Model(str(self.vosk_model_dir))
+        self.preload()
 
         audio = pyaudio.PyAudio()
         device_index, device_label = self._resolve_input_device(audio)

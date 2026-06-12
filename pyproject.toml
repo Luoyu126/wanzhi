@@ -5,13 +5,18 @@ description = "Offline elder-care voice, vision, and medication assistant for Ra
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "alibabacloud-nls-python-sdk>=1.0.2",
+    "aliyun-python-sdk-core>=2.16.0",
     "kivy>=2.3.0",
+    "llama-cpp-python>=0.3.0",
+    "mcp>=1.0.0",
     "numpy>=1.26.0",
     "onnxruntime==1.24.4",
     "opencv-python>=4.9.0",
     "piper-tts>=1.4.2",
     "pyaudio>=0.2.14",
     "pyyaml>=6.0.1",
+    "pyzmq>=26.0",
     "requests>=2.31.0",
     "sherpa-onnx>=1.10.0",
     "vosk>=0.3.45",
@@ -30,6 +35,7 @@ dev = [
 
 [project.scripts]
 wanzhi = "wanzhi.app:main"
+wanzhi-llm = "wanzhi.llm.server:main"
 wanzhi-voice = "wanzhi.voice.daemon:main"
 wanzhi-vision = "wanzhi.vision.daemon:main"
 wanzhi-ui = "wanzhi.ui.main:main"

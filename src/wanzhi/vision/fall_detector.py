@@ -4,17 +4,24 @@ import math
 import time
 from dataclasses import dataclass
 
-from wanzhi.vision.pose import Landmark
+from wanzhi.vision.pose.base import Landmark
+
+# COCO 17-keypoint indices
+LEFT_SHOULDER = 5
+RIGHT_SHOULDER = 6
+LEFT_HIP = 11
+RIGHT_HIP = 12
 
 
 @dataclass(frozen=True)
 class FallDetectionConfig:
-    fall_aspect_ratio: float = 1.3
-    torso_angle_degrees: float = 55
-    hip_shoulder_vertical_ratio: float = 0.15
-    min_fall_seconds: float = 1.5
-    required_consecutive_frames: int = 6
-    cooldown_seconds: float = 30
+    fall_aspect_ratio: float = 1.2
+    torso_angle_degrees: float = 30.0
+    vertical_velocity_threshold: float = 0.08
+    min_fall_seconds: float = 0.0
+    required_consecutive_frames: int = 15
+    cooldown_seconds: float = 30.0
+    min_keypoint_confidence: float = 0.4
 
 
 @dataclass(frozen=True)
@@ -28,23 +35,32 @@ class FallDetectionResult:
 
 
 class FallDetector:
+    """Heuristic fall detection on COCO 17 pose keypoints with frame debounce."""
+
     def __init__(self, config: FallDetectionConfig) -> None:
         self.config = config
         self._fall_started_at: float | None = None
         self._consecutive = 0
         self._last_alert_at = 0.0
+        self._prev_hip_y: float | None = None
 
     def update(self, landmarks: list[Landmark], metadata: dict | None = None) -> FallDetectionResult:
         now = time.monotonic()
-        falling, reason, confidence, summary = self._looks_fallen(landmarks)
+        frame_height = float((metadata or {}).get("frame_height", 1.0))
+        falling, reason, confidence, summary, matched_rules = self._evaluate_pose(landmarks, metadata, frame_height)
         if metadata:
             summary.update(metadata)
         if not falling:
             self._fall_started_at = None
             self._consecutive = 0
+            self._prev_hip_y = summary.get("hip_center_y_norm")
+            summary["consecutive_frames"] = 0
+            summary["matched_rules"] = []
             return FallDetectionResult(status="normal", keypoints_summary=summary)
 
         self._consecutive += 1
+        summary["consecutive_frames"] = self._consecutive
+        summary["matched_rules"] = matched_rules
         self._fall_started_at = self._fall_started_at or now
         duration = now - self._fall_started_at
         old_enough = duration >= self.config.min_fall_seconds
@@ -68,48 +84,69 @@ class FallDetector:
             keypoints_summary=summary,
         )
 
-    def _looks_fallen(self, landmarks: list[Landmark]) -> tuple[bool, str, float, dict]:
-        visible = [p for p in landmarks if p.visibility >= 0.4]
-        summary = {"visible_points": len(visible)}
-        if len(visible) < 8:
-            return False, "insufficient_keypoints", 0.0, summary
+    def _evaluate_pose(
+        self,
+        landmarks: list[Landmark],
+        metadata: dict | None,
+        frame_height: float,
+    ) -> tuple[bool, str, float, dict, list[str]]:
+        summary: dict = {"visible_points": 0}
+        if len(landmarks) < 17:
+            return False, "insufficient_keypoints", 0.0, summary, []
 
-        width = max(point.x for point in visible) - min(point.x for point in visible)
-        height = max(point.y for point in visible) - min(point.y for point in visible)
-        aspect_fallen = height > 0 and width / height > self.config.fall_aspect_ratio
-        aspect_ratio = width / height if height > 0 else 0.0
-        summary.update({"width": width, "height": height, "aspect_ratio": aspect_ratio})
+        visible = [point for point in landmarks if point.visibility >= self.config.min_keypoint_confidence]
+        summary["visible_points"] = len(visible)
+        if len(visible) < 6:
+            return False, "insufficient_keypoints", 0.0, summary, []
 
-        shoulder = _midpoint(landmarks, 11, 12)
-        hip = _midpoint(landmarks, 23, 24)
-        knee = _midpoint(landmarks, 25, 26)
-        if not shoulder or not hip or not knee:
-            confidence = min(1.0, aspect_ratio / max(self.config.fall_aspect_ratio, 0.01))
-            return aspect_fallen, "wide_body_aspect_ratio", confidence, summary
+        matched_rules: list[str] = []
 
-        torso_angle = abs(math.degrees(math.atan2(hip.y - shoulder.y, hip.x - shoulder.x)))
-        vertical_gap = abs(hip.y - shoulder.y)
-        compact_torso = vertical_gap < self.config.hip_shoulder_vertical_ratio
-        bent_low = torso_angle < self.config.torso_angle_degrees
-        summary.update({"torso_angle": torso_angle, "hip_shoulder_vertical_gap": vertical_gap})
-        reasons: list[str] = []
-        if aspect_fallen:
-            reasons.append("wide_body_aspect_ratio")
-        if compact_torso and bent_low:
-            reasons.extend(["compact_torso", "low_torso_angle"])
-        confidence = min(1.0, 0.45 * len(reasons))
-        return bool(reasons), ",".join(reasons), confidence, summary
+        bbox = (metadata or {}).get("bbox")
+        if bbox and len(bbox) == 4:
+            _, _, width, height = bbox
+            aspect_ratio = float(width) / max(float(height), 1.0)
+            summary["bbox_aspect_ratio"] = aspect_ratio
+            if aspect_ratio > self.config.fall_aspect_ratio:
+                matched_rules.append("wide_body_aspect_ratio")
+
+        shoulder = _midpoint(landmarks, LEFT_SHOULDER, RIGHT_SHOULDER)
+        hip = _midpoint(landmarks, LEFT_HIP, RIGHT_HIP)
+        if hip is not None:
+            summary["hip_center_y_norm"] = hip.y
+            if self._prev_hip_y is not None:
+                delta_y_norm = hip.y - self._prev_hip_y
+                delta_y_px = delta_y_norm * frame_height
+                summary["hip_vertical_delta_norm"] = delta_y_norm
+                summary["hip_vertical_delta_px"] = delta_y_px
+                if delta_y_norm > self.config.vertical_velocity_threshold:
+                    matched_rules.append("rapid_vertical_drop")
+
+        if shoulder is not None and hip is not None:
+            dx = hip.x - shoulder.x
+            dy = hip.y - shoulder.y
+            torso_angle = abs(math.degrees(math.atan2(abs(dy), abs(dx) + 1e-6)))
+            summary["torso_angle"] = torso_angle
+            if torso_angle < self.config.torso_angle_degrees:
+                matched_rules.append("low_torso_angle")
+
+        matched_rules = sorted(set(matched_rules))
+        if len(matched_rules) < 2:
+            return False, "monitoring", 0.0, summary, matched_rules
+
+        confidence = min(1.0, 0.35 * len(matched_rules) + 0.2)
+        return True, ",".join(matched_rules), confidence, summary, matched_rules
 
 
 def _midpoint(landmarks: list[Landmark], left: int, right: int) -> Landmark | None:
     if len(landmarks) <= max(left, right):
         return None
-    l_point = landmarks[left]
-    r_point = landmarks[right]
-    if l_point.visibility < 0.4 or r_point.visibility < 0.4:
+    left_point = landmarks[left]
+    right_point = landmarks[right]
+    min_conf = 0.4
+    if left_point.visibility < min_conf or right_point.visibility < min_conf:
         return None
     return Landmark(
-        x=(l_point.x + r_point.x) / 2,
-        y=(l_point.y + r_point.y) / 2,
-        visibility=min(l_point.visibility, r_point.visibility),
+        x=(left_point.x + right_point.x) / 2,
+        y=(left_point.y + right_point.y) / 2,
+        visibility=min(left_point.visibility, right_point.visibility),
     )

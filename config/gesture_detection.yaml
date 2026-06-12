@@ -1,0 +1,16 @@
+min_keypoint_confidence: 0.5
+required_consecutive_frames: 6
+cooldown_seconds: 30
+raised_hand_margin: 0.04
+raised_elbow_margin: 0.08
+wave_window_frames: 10
+wave_min_points: 6
+wave_min_horizontal_range: 0.16
+wave_min_direction_changes: 2
+wave_max_vertical_range: 0.18
+struggle_window_frames: 8
+struggle_min_frames: 5
+struggle_joint_motion_threshold: 0.045
+struggle_avg_motion_threshold: 0.055
+struggle_peak_motion_threshold: 0.11
+struggle_min_active_joints: 3

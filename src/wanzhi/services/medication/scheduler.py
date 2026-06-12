@@ -3,13 +3,13 @@ from __future__ import annotations
 import time
 from datetime import date, datetime
 
-from wanzhi.core.bus import JsonlEventBus
+from wanzhi.core.bus import EventBus
 from wanzhi.core.events import Event, EventTypes
 from wanzhi.services.medication.repository import MedicationRepository
 
 
 class MedicationScheduler:
-    def __init__(self, repo: MedicationRepository, bus: JsonlEventBus) -> None:
+    def __init__(self, repo: MedicationRepository, bus: EventBus) -> None:
         self.repo = repo
         self.bus = bus
         self._emitted: set[tuple[str, int]] = set()

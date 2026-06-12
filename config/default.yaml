@@ -13,6 +13,7 @@ wake:
 voice:
   default: default_soft
   profiles_file: config/voices.yaml
+  prewarm: true
 
 stt:
   provider: vosk
@@ -25,21 +26,48 @@ stt:
 
 conversation:
   followup_turns: 3
+  max_context_messages: 24
+  reply_idle_timeout_seconds: 30
+  post_tts_grace_seconds: 0.25
+  empty_followup_retries: 1
+  empty_followup_message: 我没听清，可以再说一遍吗？
 
 llm:
-  provider: ollama
+  provider: llama-cpp
+  model_path: models/llm/qwen2.5-3b-instruct-q4_k_m.gguf
+  socket_path: /run/wanzhi-llm/llm.sock
+  n_ctx: 4096
+  n_threads: 4
+  n_gpu_layers: 0
+  use_mlock: true
+  verbose: false
+  temperature: 0.4
+  max_tokens: 160
+  max_react_steps: 4
+  timeout_seconds: 30
+  startup_wait_seconds: 5
+  unavailable_message: 系统核心正在启动中，请稍后。
   host: http://127.0.0.1:11434
   model: qwen2.5:1.5b-instruct
-  timeout_seconds: 30
 
 tts:
-  provider: piper
+  provider: aliyun
   binary: .venv/bin/piper
   sherpa_binary: .venv/bin/sherpa-onnx-offline-tts
   voices_dir: models/piper-voices
   cache_dir: data/tts-cache
-  output_device: plughw:3,0
+  output_device: ""
   num_threads: 2
+  aliyun:
+    appkey: ""
+    region: cn-shanghai
+    url: wss://nls-gateway-cn-shanghai.aliyuncs.com/ws/v1
+    voice: ailun
+    format: wav
+    sample_rate: 16000
+    volume: 50
+    speech_rate: 0
+    pitch_rate: 0
   sherpa_models:
     aishell3:
       type: vits
@@ -75,24 +103,51 @@ vision:
   width: 640
   height: 480
   fps_target: 6
-  pose_backend: auto
-  emit_snapshots: true
-  snapshot_dir: data/vision-events
-  preview_frame_path: data/camera-preview/latest.jpg
-  preview_update_every_frames: 2
+  pose_backend: yolo
+  pose_model_path: models/yolov8n-pose.onnx
+  pose_input_size: 640
+  preview_shm_name: wanzhi_camera_preview
+  preview_update_every_frames: 1
   health_interval_seconds: 30
   fall_config: config/fall_detection.yaml
+  gesture_config: config/gesture_detection.yaml
+  nice_level: 10
 
 ui:
   fullscreen: true
-  default_screen: camera
+  font_scale: 2.5
+  default_screen: face
   event_log: data/events.jsonl
   camera_preview: true
   camera_fps: 24
-  camera_frame_path: data/camera-preview/latest.jpg
+  camera_shm_name: wanzhi_camera_preview
+  event_poll_interval: 0.05
 
 database:
   path: data/wanzhi.db
 
 events:
+  backend: zmq
+  zmq_endpoint: ipc:///tmp/wanzhi-events.sock
+  audit_jsonl: true
   log_path: data/events.jsonl
+
+alerts:
+  zmq_endpoint: ipc:///tmp/wanzhi-vision-alerts.sock
+  voice_message: 检测到跌倒，正在为您呼叫紧急联系人。
+
+media:
+  enabled: true
+  player: mpv
+  fallback_player: ffplay
+  start_delay_seconds: 1.5
+
+mcp:
+  enabled: true
+  timeout_seconds: 8
+  servers:
+    media:
+      transport: stdio
+      command: .venv/bin/python
+      args:
+        - scripts/mcp_media_server.py

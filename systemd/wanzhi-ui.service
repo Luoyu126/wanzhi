@@ -1,6 +1,8 @@
 [Unit]
 Description=Wanzhi Kivy display
 After=graphical-session.target
+ConditionEnvironment=|DISPLAY
+ConditionEnvironment=|WAYLAND_DISPLAY
 
 [Service]
 Type=simple
@@ -13,4 +15,4 @@ Restart=always
 RestartSec=5
 
 [Install]
-WantedBy=default.target
+WantedBy=wanzhi.target

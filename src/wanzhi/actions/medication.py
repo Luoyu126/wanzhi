@@ -2,14 +2,14 @@ from __future__ import annotations
 
 from datetime import date
 
-from wanzhi.core.bus import JsonlEventBus
+from wanzhi.core.bus import EventBus
 from wanzhi.core.config import AppConfig
 from wanzhi.core.events import Event, EventTypes
 from wanzhi.services.medication.repository import MedicationRepository
 
 
 class MedicationActions:
-    def __init__(self, config: AppConfig, bus: JsonlEventBus) -> None:
+    def __init__(self, config: AppConfig, bus: EventBus) -> None:
         self.bus = bus
         self.repo = MedicationRepository(config.path("database.path", "data/wanzhi.db"))
 

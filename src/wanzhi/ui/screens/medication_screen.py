@@ -11,7 +11,13 @@ try:
 except ImportError:  # pragma: no cover
     Screen = object  # type: ignore
 
+from wanzhi.ui.fonts import DEFAULT_UI_FONT_SCALE, scaled, scaled_padding
 from wanzhi.ui.widgets.med_card import MedicationCard
+
+
+def _bind_wrapped_label(label: Label) -> Label:
+    label.bind(width=lambda instance, width: setattr(instance, "text_size", (max(width, 1), None)))
+    return label
 
 
 class MedicationScreen(Screen):
@@ -21,6 +27,7 @@ class MedicationScreen(Screen):
         mark_taken: Callable[[int, str], None],
         font_name: str = "Roboto",
         emoji_font_name: str = "Roboto",
+        font_scale: float = DEFAULT_UI_FONT_SCALE,
         **kwargs,
     ):  # type: ignore[no-untyped-def]
         super().__init__(**kwargs)
@@ -28,44 +35,53 @@ class MedicationScreen(Screen):
         self.mark_taken = mark_taken
         self.font_name = font_name
         self.emoji_font_name = emoji_font_name
+        self.font_scale = font_scale
+        layout_scale = min(font_scale, 1.8)
         with self.canvas.before:
             Color(0.94, 0.97, 0.95, 1)
             self._bg = RoundedRectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._update_bg, size=self._update_bg)
 
-        self.root = BoxLayout(orientation="vertical", padding=(28, 24), spacing=18)
+        self.root = BoxLayout(
+            orientation="vertical",
+            padding=scaled_padding((24, 20), layout_scale),
+            spacing=scaled(16, layout_scale),
+        )
 
-        header = BoxLayout(orientation="horizontal", size_hint_y=None, height=62, spacing=14)
-        header.add_widget(
-            Label(text="💊", font_size=42, size_hint_x=None, width=58, font_name=self.emoji_font_name)
+        header = BoxLayout(
+            orientation="horizontal",
+            size_hint_y=None,
+            height=scaled(62, layout_scale),
+            spacing=scaled(12, layout_scale),
         )
         header.add_widget(
             Label(
-                text="今日药物清单",
-                font_size=40,
+                text="药",
+                font_size=scaled(38, font_scale),
                 bold=True,
-                size_hint_y=None,
-                height=54,
+                size_hint_x=None,
+                width=scaled(48, layout_scale),
+                color=(0.20, 0.58, 0.42, 1),
+                font_name=self.font_name,
+            )
+        )
+        title = _bind_wrapped_label(
+            Label(
+                text="今日药物清单",
+                font_size=scaled(40, font_scale),
+                bold=True,
                 color=(0.10, 0.20, 0.28, 1),
                 font_name=self.font_name,
                 halign="left",
-                text_size=(520, None),
+                valign="middle",
+                text_size=(1, None),
             )
         )
+        header.add_widget(title)
         self.root.add_widget(header)
-        self.root.add_widget(
-            Label(
-                text="⏰ 请按时服药，服用后点击“已服用”",
-                font_size=22,
-                size_hint_y=None,
-                height=34,
-                color=(0.35, 0.43, 0.48, 1),
-                font_name=self.font_name,
-            )
-        )
-        self.list_box = BoxLayout(orientation="vertical", spacing=16, size_hint_y=None)
+        self.list_box = BoxLayout(orientation="vertical", spacing=scaled(14, layout_scale), size_hint_y=None)
         self.list_box.bind(minimum_height=self.list_box.setter("height"))
-        scroll = ScrollView(bar_width=8)
+        scroll = ScrollView(bar_width=scaled(8, layout_scale))
         scroll.add_widget(self.list_box)
         self.root.add_widget(scroll)
         self.add_widget(self.root)
@@ -78,9 +94,10 @@ class MedicationScreen(Screen):
             self.list_box.add_widget(
                 EmptyMedicationCard(
                     text="今天还没有药物安排",
-                    subtext="🌿 你可以之后通过语音或管理界面添加药物",
+                    subtext="你可以之后通过语音或管理界面添加药物",
                     font_name=self.font_name,
                     emoji_font_name=self.emoji_font_name,
+                    font_scale=self.font_scale,
                 )
             )
             return
@@ -90,6 +107,7 @@ class MedicationScreen(Screen):
                 on_taken=self._mark_taken,
                 font_name=self.font_name,
                 emoji_font_name=self.emoji_font_name,
+                font_scale=self.font_scale,
             )
             self.list_box.add_widget(card)
 
@@ -109,19 +127,61 @@ class EmptyMedicationCard(BoxLayout):
         subtext: str,
         font_name: str,
         emoji_font_name: str = "Roboto",
+        font_scale: float = DEFAULT_UI_FONT_SCALE,
         **kwargs,
     ):  # type: ignore[no-untyped-def]
-        super().__init__(orientation="vertical", padding=28, spacing=10, size_hint_y=None, height=180, **kwargs)
+        layout_scale = min(font_scale, 1.8)
+        super().__init__(
+            orientation="vertical",
+            padding=scaled(24, layout_scale),
+            spacing=scaled(10, layout_scale),
+            size_hint_y=None,
+            height=scaled(180, layout_scale),
+            **kwargs,
+        )
         with self.canvas.before:
             Color(1, 1, 1, 1)
-            self._bg = RoundedRectangle(radius=[22], pos=self.pos, size=self.size)
+            self._bg = RoundedRectangle(radius=[scaled(22, layout_scale)], pos=self.pos, size=self.size)
         self.bind(pos=self._update_bg, size=self._update_bg)
-        top = BoxLayout(orientation="horizontal", spacing=12)
-        top.add_widget(Label(text="🧺", font_size=36, size_hint_x=None, width=52, font_name=emoji_font_name))
-        top.add_widget(Label(text=text, font_size=30, bold=True, color=(0.16, 0.22, 0.28, 1), font_name=font_name))
+        top = BoxLayout(orientation="horizontal", spacing=scaled(12, layout_scale))
+        top.add_widget(
+            Label(
+                text="空",
+                font_size=scaled(32, font_scale),
+                bold=True,
+                size_hint_x=None,
+                width=scaled(46, layout_scale),
+                color=(0.20, 0.58, 0.42, 1),
+                font_name=font_name,
+            )
+        )
+        top.add_widget(
+            _bind_wrapped_label(
+                Label(
+                    text=text,
+                    font_size=scaled(30, font_scale),
+                    bold=True,
+                    color=(0.16, 0.22, 0.28, 1),
+                    font_name=font_name,
+                    halign="left",
+                    valign="middle",
+                    text_size=(1, None),
+                )
+            )
+        )
         self.add_widget(top)
         self.add_widget(
-            Label(text=subtext, font_size=20, color=(0.44, 0.50, 0.55, 1), font_name=font_name)
+            _bind_wrapped_label(
+                Label(
+                    text=subtext,
+                    font_size=scaled(20, font_scale),
+                    color=(0.44, 0.50, 0.55, 1),
+                    font_name=font_name,
+                    halign="left",
+                    valign="middle",
+                    text_size=(1, None),
+                )
+            )
         )
 
     def _update_bg(self, *_args) -> None:

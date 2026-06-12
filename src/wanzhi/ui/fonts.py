@@ -5,6 +5,7 @@ from pathlib import Path
 
 FONT_NAME = "WanzhiChinese"
 EMOJI_FONT_NAME = "WanzhiEmoji"
+DEFAULT_UI_FONT_SCALE = 2.5
 FONT_CANDIDATES = [
     Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc"),
     Path("/usr/share/fonts/opentype/noto/NotoSansCJK-Medium.ttc"),
@@ -14,6 +15,14 @@ FONT_CANDIDATES = [
 EMOJI_FONT_CANDIDATES = [
     Path("/usr/share/fonts/truetype/noto/NotoColorEmoji.ttf"),
 ]
+
+
+def scaled(value: float, font_scale: float = DEFAULT_UI_FONT_SCALE) -> int:
+    return max(1, int(round(value * font_scale)))
+
+
+def scaled_padding(values: tuple[float, ...], font_scale: float = DEFAULT_UI_FONT_SCALE) -> tuple[int, ...]:
+    return tuple(scaled(value, font_scale) for value in values)
 
 
 def register_chinese_font() -> str:

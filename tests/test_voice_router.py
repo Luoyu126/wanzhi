@@ -20,6 +20,13 @@ def test_router_detects_specific_voice_change() -> None:
     assert intent.slots["voice_id"] == "child_female"
 
 
+def test_router_detects_granddaughter_voice_change() -> None:
+    intent = IntentRouter().parse("我想我的孙女儿了，换成十岁左右的小姑娘声音")
+
+    assert intent.name == "change_voice"
+    assert intent.slots["voice_id"] == "child_female"
+
+
 def test_router_detects_elder_male_voice_change() -> None:
     intent = IntentRouter().parse("切换到老年男声")
 

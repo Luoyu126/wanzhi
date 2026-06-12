@@ -33,8 +33,12 @@ class Event:
 class EventTypes:
     VOICE_AWAKE = "voice.awake"
     VOICE_LISTENING = "voice.listening"
+    VOICE_TRANSCRIBED = "voice.transcribed"
     VOICE_SPEAKING = "voice.speaking"
+    LLM_LOADING = "llm.loading"
+    LLM_READY = "llm.ready"
     UI_SHOW_FACE = "ui.show_face"
+    UI_SHOW_CAMERA = "ui.show_camera"
     UI_SHOW_MEDICATION = "ui.show_medication"
     MEDICATION_REMINDER = "medication.reminder"
     MEDICATION_TAKEN = "medication.taken"

@@ -1,16 +1,18 @@
 [Unit]
 Description=Wanzhi voice assistant daemon
-After=sound.target network-online.target ollama.service
-Wants=network-online.target ollama.service
+After=sound.target network-online.target wanzhi-ui.service wanzhi-llm.service wanzhi-vision.service
+Wants=network-online.target wanzhi-llm.service wanzhi-vision.service
 
 [Service]
 Type=simple
 WorkingDirectory=/home/icenter/wanzhi
 Environment=PYTHONUNBUFFERED=1
 Environment=PYTHONPATH=/home/icenter/wanzhi/src
+EnvironmentFile=-/home/icenter/wanzhi/data/secrets/media.env
 ExecStart=/home/icenter/wanzhi/.venv/bin/wanzhi-voice
 Restart=always
 RestartSec=5
+LimitMEMLOCK=infinity
 
 [Install]
-WantedBy=default.target
+WantedBy=wanzhi.target

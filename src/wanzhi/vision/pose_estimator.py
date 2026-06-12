@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from wanzhi.vision.pose import Landmark
-from wanzhi.vision.pose.mediapipe_backend import MediaPipePoseEstimator
+from wanzhi.vision.pose.base import Landmark
+from wanzhi.vision.pose.yolo_backend import YoloPoseEstimator
 
-__all__ = ["Landmark", "MediaPipePoseEstimator"]
+__all__ = ["Landmark", "YoloPoseEstimator"]

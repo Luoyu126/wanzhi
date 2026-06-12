@@ -21,7 +21,7 @@ stream = p.open(format=pyaudio.paInt16,
                 input=True,
                 frames_per_buffer=4000)
 
-print("\n🎤 丸智已启动，说点什么...")
+print("\n丸智已启动，说点什么...")
 
 while True:
     data = stream.read(4000)
@@ -29,4 +29,4 @@ while True:
         result = json.loads(recognizer.Result())
         text = result.get("text", "")
         if text:
-            print(f"📝 识别: {text}")
+            print(f"识别: {text}")

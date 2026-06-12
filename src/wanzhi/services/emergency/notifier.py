@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from wanzhi.core.bus import JsonlEventBus
+from wanzhi.core.bus import EventBus
 from wanzhi.core.events import Event, EventTypes
 
 
 class EmergencyNotifier:
-    def __init__(self, bus: JsonlEventBus) -> None:
+    def __init__(self, bus: EventBus) -> None:
         self.bus = bus
 
     def notify(self, reason: str, source: str = "vision", payload: dict | None = None) -> None:
